@@ -25,7 +25,24 @@ import json
 from web3 import Web3
 import pandas as pd
 
+def rendering(asset):
+    if asset['name'] is not None:
+        sl.subheader(asset['name'])
+    else:
+        sl.subheader(f"{asset['collection']['name']} n° {asset['token_id']}")
+    
+    if asset['description'] is not None:
+        sl.write(asset['description'])
+    else:
+        sl.write(asset['collection']['description'])
 
+    if asset['image_url'].endswith('mp4') or asset['image_url'].endswith('mov'):
+        sl.video(asset['image_url'])
+    elif asset['image_url'].endswith('svg'):
+        svg = requests.get(asset['image_url']).content.decode()
+        sl.image(svg)
+    else:
+        sl.image(asset['image_url'])
 
 mainselection = sl.sidebar.selectbox("Cosa Fare",['Assets','Events','Rarity'])
 
@@ -61,15 +78,7 @@ if mainselection=='Assets':
 
             for asset in r['assets']:
 
-                if asset['name']:
-                    sl.write(asset['name'])
-                else:
-                    sl.write(f"{asset['collection']['name']} n° {asset['token_id']}")
-
-                if asset['image_preview_url'].endswith('mp4') or asset['image_preview_url'].endswith('mov'):
-                    sl.video(asset['image_preview_url'])
-                else:
-                    sl.image(asset['image_preview_url'])
+                rendering(asset)
 
         else:
             sl.write('Non trovo Assets con i Filtri indicati')
@@ -137,11 +146,6 @@ elif mainselection=='Rarity':
         assets_sorted = sorted(asset_rarities, key= lambda asset: asset['rarity'], reverse=False)
 
         for asset in assets_sorted[:10]:
-            if asset['name']:
-                    sl.write(asset['name'])
             if asset['rarity']:
-                    sl.write(f"Rarity Score: {asset['rarity']}")
-            if asset['image_url'].endswith('mp4') or asset['image_url'].endswith('mov'):
-                sl.video(asset['image_url'])
-            elif asset['image_url'].endswith('jpg'):
-                sl.image(asset['image_url'])
+                    sl.subheader(f"Rarity Score: {asset['rarity']}")
+            rendering(asset)
